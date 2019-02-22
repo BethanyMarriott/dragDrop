@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+chokidar "./**/*.elm" "./**/*.elm" -c "elm make ./src/Main.elm --output=./docs/build/app.js" --initial
