@@ -19,9 +19,6 @@ update msg model =
                 ( draggable, items ) =
                     system.update dndMsg model.draggable model.items
 
-
-                oldItems = model.items
-
                 maybeDragId = system.draggedIndex draggable
 
                 reindexedItems =
@@ -29,36 +26,39 @@ update msg model =
                         |> List.indexedMap (\index item -> { item | position = index })
 
                 (droppedAtIndex, shouldAcc) =
-                    List.foldl (getDroppedAt maybeDragId) (0, True) items |> Debug.log "dropped at"
+                    List.foldl (getDroppedAt maybeDragId) (0, True) items
 
                 updatedItems =
                     case shouldAcc of
                         False ->
                             let
-                                reindexedItemsArray =
-                                    reindexedItems
-                                        |> Array.fromList
+                                blah = Debug.log "droppedAt" droppedAtIndex
 
                                 maybeDraggedItem =
-                                    reindexedItemsArray
-                                        |> Array.get droppedAtIndex |> Debug.log "dragged item"
+                                    reindexedItems
+                                        |> List.foldl (\scu acc -> if scu.position == droppedAtIndex then scu :: acc else acc) []
+                                        |> List.head
+                                        |> Debug.log "dragged"
 
                                 maybeDroppedItem =
-                                    oldItems
-                                        |> Array.fromList
-                                        |> Array.get droppedAtIndex |> Debug.log "dropped item"
+                                    items
+                                        |> List.foldl (\scu acc -> if scu.position == droppedAtIndex then scu :: acc else acc) []
+                                        |> List.head
+                                        |> Debug.log "dropped"
 
                             in
                             case (maybeDraggedItem, maybeDroppedItem) of
                                 (Just draggedItem, Just droppedItem) ->
---                                    let
---                                        updatedItem =
---                                            { draggedItem | group = droppedItem.group }
---
---                                    in
---                                        Array.set droppedAtIndex updatedItem reindexedItemsArray
---                                            |> Array.toList
+                                    let
+                                        updatedItem =
+                                            { draggedItem | group = droppedItem.group }
+
+                                    in
                                     reindexedItems
+                                        |> Array.fromList
+                                        |> Array.set droppedAtIndex updatedItem
+                                        |> Array.toList
+
                                 _ ->
                                     reindexedItems
                         True ->

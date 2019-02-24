@@ -6131,10 +6131,13 @@ var author$project$Config$data = _List_fromArray(
 	[
 		A4(author$project$Config$Fruit, 'id-Apples', 0, 0, 'Apples'),
 		A4(author$project$Config$Fruit, 'id-Bananas', 1, 0, 'Bananas'),
-		A4(author$project$Config$Fruit, 'id-Cherries', 2, 0, 'Oranges'),
-		A4(author$project$Config$Fruit, 'id-Dates', 3, 1, 'Pears'),
+		A4(author$project$Config$Fruit, 'id-Oranges', 2, 0, 'Oranges'),
+		A4(author$project$Config$Fruit, 'id-Pears', 3, 1, 'Pears'),
 		A4(author$project$Config$Fruit, 'id-Cherries', 4, 1, 'Cherries'),
-		A4(author$project$Config$Fruit, 'id-Grapes', 5, 1, 'Grapes')
+		A4(author$project$Config$Fruit, 'id-Grapes', 5, 1, 'Grapes'),
+		A4(author$project$Config$Fruit, 'id-Plums', 6, 2, 'Plums'),
+		A4(author$project$Config$Fruit, 'id-Dates', 7, 2, 'Dates'),
+		A4(author$project$Config$Fruit, 'id-Berries', 6, 2, 'Berries')
 	]);
 var author$project$Model$initialModel = {draggable: author$project$Config$system.draggable, items: author$project$Config$data};
 var author$project$Update$getDroppedAt = F3(
@@ -6188,25 +6191,27 @@ var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
 var elm$core$Array$bitMask = 4294967295 >>> (32 - elm$core$Array$shiftStep);
 var elm$core$Bitwise$and = _Bitwise_and;
 var elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
-var elm$core$Array$getHelp = F3(
-	function (shift, index, tree) {
-		getHelp:
-		while (true) {
-			var pos = elm$core$Array$bitMask & (index >>> shift);
-			var _n0 = A2(elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (_n0.$ === 'SubTree') {
-				var subTree = _n0.a;
-				var $temp$shift = shift - elm$core$Array$shiftStep,
-					$temp$index = index,
-					$temp$tree = subTree;
-				shift = $temp$shift;
-				index = $temp$index;
-				tree = $temp$tree;
-				continue getHelp;
-			} else {
-				var values = _n0.a;
-				return A2(elm$core$Elm$JsArray$unsafeGet, elm$core$Array$bitMask & index, values);
-			}
+var elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
+var elm$core$Array$setHelp = F4(
+	function (shift, index, value, tree) {
+		var pos = elm$core$Array$bitMask & (index >>> shift);
+		var _n0 = A2(elm$core$Elm$JsArray$unsafeGet, pos, tree);
+		if (_n0.$ === 'SubTree') {
+			var subTree = _n0.a;
+			var newSub = A4(elm$core$Array$setHelp, shift - elm$core$Array$shiftStep, index, value, subTree);
+			return A3(
+				elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				elm$core$Array$SubTree(newSub),
+				tree);
+		} else {
+			var values = _n0.a;
+			var newLeaf = A3(elm$core$Elm$JsArray$unsafeSet, elm$core$Array$bitMask & index, value, values);
+			return A3(
+				elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				elm$core$Array$Leaf(newLeaf),
+				tree);
 		}
 	});
 var elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
@@ -6214,38 +6219,51 @@ var elm$core$Array$tailIndex = function (len) {
 	return (len >>> 5) << 5;
 };
 var elm$core$Basics$ge = _Utils_ge;
-var elm$core$Array$get = F2(
-	function (index, _n0) {
-		var len = _n0.a;
-		var startShift = _n0.b;
-		var tree = _n0.c;
-		var tail = _n0.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? elm$core$Maybe$Nothing : ((_Utils_cmp(
+var elm$core$Array$set = F3(
+	function (index, value, array) {
+		var len = array.a;
+		var startShift = array.b;
+		var tree = array.c;
+		var tail = array.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
 			index,
-			elm$core$Array$tailIndex(len)) > -1) ? elm$core$Maybe$Just(
-			A2(elm$core$Elm$JsArray$unsafeGet, elm$core$Array$bitMask & index, tail)) : elm$core$Maybe$Just(
-			A3(elm$core$Array$getHelp, startShift, index, tree)));
+			elm$core$Array$tailIndex(len)) > -1) ? A4(
+			elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			tree,
+			A3(elm$core$Elm$JsArray$unsafeSet, elm$core$Array$bitMask & index, value, tail)) : A4(
+			elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A4(elm$core$Array$setHelp, startShift, index, value, tree),
+			tail));
 	});
 var elm$core$Debug$log = _Debug_log;
+var elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(x);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
 var author$project$Update$update = F2(
 	function (msg, model) {
 		if (msg.$ === 'NoOp') {
 			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		} else {
 			var dndMsg = msg.a;
-			var oldItems = model.items;
 			var _n1 = A3(author$project$Config$system.update, dndMsg, model.draggable, model.items);
 			var draggable = _n1.a;
 			var items = _n1.b;
 			var maybeDragId = author$project$Config$system.draggedIndex(draggable);
-			var _n2 = A2(
-				elm$core$Debug$log,
-				'dropped at',
-				A3(
-					elm$core$List$foldl,
-					author$project$Update$getDroppedAt(maybeDragId),
-					_Utils_Tuple2(0, true),
-					items));
+			var _n2 = A3(
+				elm$core$List$foldl,
+				author$project$Update$getDroppedAt(maybeDragId),
+				_Utils_Tuple2(0, true),
+				items);
 			var droppedAtIndex = _n2.a;
 			var shouldAcc = _n2.b;
 			var reindexedItems = A2(
@@ -6259,23 +6277,44 @@ var author$project$Update$update = F2(
 				items);
 			var updatedItems = function () {
 				if (!shouldAcc) {
-					var reindexedItemsArray = elm$core$Array$fromList(reindexedItems);
 					var maybeDroppedItem = A2(
 						elm$core$Debug$log,
-						'dropped item',
-						A2(
-							elm$core$Array$get,
-							droppedAtIndex,
-							elm$core$Array$fromList(oldItems)));
+						'dropped',
+						elm$core$List$head(
+							A3(
+								elm$core$List$foldl,
+								F2(
+									function (scu, acc) {
+										return _Utils_eq(scu.position, droppedAtIndex) ? A2(elm$core$List$cons, scu, acc) : acc;
+									}),
+								_List_Nil,
+								items)));
 					var maybeDraggedItem = A2(
 						elm$core$Debug$log,
-						'dragged item',
-						A2(elm$core$Array$get, droppedAtIndex, reindexedItemsArray));
+						'dragged',
+						elm$core$List$head(
+							A3(
+								elm$core$List$foldl,
+								F2(
+									function (scu, acc) {
+										return _Utils_eq(scu.position, droppedAtIndex) ? A2(elm$core$List$cons, scu, acc) : acc;
+									}),
+								_List_Nil,
+								reindexedItems)));
+					var blah = A2(elm$core$Debug$log, 'droppedAt', droppedAtIndex);
 					var _n4 = _Utils_Tuple2(maybeDraggedItem, maybeDroppedItem);
 					if ((_n4.a.$ === 'Just') && (_n4.b.$ === 'Just')) {
 						var draggedItem = _n4.a.a;
 						var droppedItem = _n4.b.a;
-						return reindexedItems;
+						var updatedItem = _Utils_update(
+							draggedItem,
+							{group: droppedItem.group});
+						return elm$core$Array$toList(
+							A3(
+								elm$core$Array$set,
+								droppedAtIndex,
+								updatedItem,
+								elm$core$Array$fromList(reindexedItems)));
 					} else {
 						return reindexedItems;
 					}
@@ -6290,48 +6329,116 @@ var author$project$Update$update = F2(
 				author$project$Config$system.commands(model.draggable));
 		}
 	});
-var elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return elm$core$Maybe$Just(x);
-	} else {
-		return elm$core$Maybe$Nothing;
+var author$project$View$draggedHandleStyles = _List_fromArray(
+	[
+		A2(elm$html$Html$Attributes$style, 'background', '#b4752b')
+	]);
+var author$project$View$draggedItemStyles = _List_fromArray(
+	[
+		A2(elm$html$Html$Attributes$style, 'background', '#dc9a39')
+	]);
+var author$project$View$groupColorDark = function (group) {
+	switch (group) {
+		case 0:
+			return '#afb42b';
+		case 1:
+			return 'rgb(43, 175, 180)';
+		default:
+			return '#b72929';
 	}
+};
+var author$project$View$handleStyles = function (group) {
+	return _List_fromArray(
+		[
+			A2(elm$html$Html$Attributes$style, 'width', '50px'),
+			A2(elm$html$Html$Attributes$style, 'height', '50px'),
+			A2(
+			elm$html$Html$Attributes$style,
+			'background',
+			author$project$View$groupColorDark(group)),
+			A2(elm$html$Html$Attributes$style, 'border-radius', '8px'),
+			A2(elm$html$Html$Attributes$style, 'margin', '20px'),
+			A2(elm$html$Html$Attributes$style, 'cursor', 'pointer')
+		]);
+};
+var author$project$View$groupColor = function (group) {
+	switch (group) {
+		case 0:
+			return '#cddc39';
+		case 1:
+			return 'rgb(57, 205, 220)';
+		default:
+			return '#dc3939';
+	}
+};
+var author$project$View$itemStyles = function (group) {
+	return _List_fromArray(
+		[
+			A2(elm$html$Html$Attributes$style, 'width', '180px'),
+			A2(elm$html$Html$Attributes$style, 'height', '100px'),
+			A2(
+			elm$html$Html$Attributes$style,
+			'background',
+			author$project$View$groupColor(group)),
+			A2(elm$html$Html$Attributes$style, 'border-radius', '8px'),
+			A2(elm$html$Html$Attributes$style, 'display', 'flex'),
+			A2(elm$html$Html$Attributes$style, 'align-items', 'center')
+		]);
 };
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var author$project$View$draggedItemView = F2(
-	function (draggable, items) {
-		var maybeDraggedItem = A2(
+	function (draggable, fruits) {
+		var maybeDraggedFruit = A2(
 			elm$core$Maybe$andThen,
 			function (index) {
 				return elm$core$List$head(
-					A2(elm$core$List$drop, index, items));
+					A2(elm$core$List$drop, index, fruits));
 			},
 			author$project$Config$system.draggedIndex(draggable));
-		if (maybeDraggedItem.$ === 'Just') {
-			var item = maybeDraggedItem.a;
+		if (maybeDraggedFruit.$ === 'Just') {
+			var fruit = maybeDraggedFruit.a;
 			return A2(
 				elm$html$Html$div,
 				_Utils_ap(
-					_List_fromArray(
-						[
-							A2(elm$html$Html$Attributes$style, 'height', '70px'),
-							A2(elm$html$Html$Attributes$style, 'color', '#2b2b2b')
-						]),
-					author$project$Config$system.draggedStyles(draggable)),
+					author$project$View$itemStyles(fruit.group),
+					_Utils_ap(
+						author$project$View$draggedItemStyles,
+						author$project$Config$system.draggedStyles(draggable))),
 				_List_fromArray(
 					[
-						elm$html$Html$text(item.name)
+						A2(
+						elm$html$Html$div,
+						_Utils_ap(
+							author$project$View$handleStyles(fruit.group),
+							author$project$View$draggedHandleStyles),
+						_List_Nil),
+						A2(
+						elm$html$Html$div,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text(fruit.name)
+							]))
 					]));
 		} else {
 			return elm$html$Html$text('');
 		}
 	});
+var author$project$View$containerStyles = _List_fromArray(
+	[
+		A2(elm$html$Html$Attributes$style, 'display', 'flex'),
+		A2(elm$html$Html$Attributes$style, 'flex-wrap', 'wrap'),
+		A2(elm$html$Html$Attributes$style, 'align-items', 'center'),
+		A2(elm$html$Html$Attributes$style, 'justify-content', 'center'),
+		A2(elm$html$Html$Attributes$style, 'margin-top', '50px')
+	]);
+var author$project$View$overedItemStyles = _List_fromArray(
+	[
+		A2(elm$html$Html$Attributes$style, 'background', 'dimgray')
+	]);
 var elm$core$Basics$neq = _Utils_notEqual;
-var elm$html$Html$p = _VirtualDom_node('p');
 var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -6342,42 +6449,82 @@ var elm$html$Html$Attributes$stringProperty = F2(
 	});
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
 var author$project$View$itemView = F2(
-	function (maybeDraggedIndex, item) {
+	function (maybeDraggedIndex, fruit) {
 		if (maybeDraggedIndex.$ === 'Nothing') {
 			return A2(
-				elm$html$Html$p,
-				_Utils_ap(
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$id(item.id),
-							A2(elm$html$Html$Attributes$style, 'height', '70px')
-						]),
-					A2(author$project$Config$system.dragEvents, item.position, item.id)),
+				elm$html$Html$div,
 				_List_fromArray(
 					[
-						elm$html$Html$text(item.name)
+						A2(elm$html$Html$Attributes$style, 'margin', '0 2em 3em 2em')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$div,
+						A2(
+							elm$core$List$cons,
+							elm$html$Html$Attributes$id(fruit.id),
+							author$project$View$itemStyles(fruit.group)),
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$div,
+								_Utils_ap(
+									author$project$View$handleStyles(fruit.group),
+									A2(author$project$Config$system.dragEvents, fruit.position, fruit.id)),
+								_List_Nil),
+								A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text(fruit.name)
+									]))
+							]))
 					]));
 		} else {
 			var draggedIndex = maybeDraggedIndex.a;
-			return (!_Utils_eq(draggedIndex, item.position)) ? A2(
+			return (!_Utils_eq(draggedIndex, fruit.position)) ? A2(
 				elm$html$Html$div,
-				A2(
-					elm$core$List$cons,
-					A2(elm$html$Html$Attributes$style, 'height', '70px'),
-					author$project$Config$system.dropEvents(item.position)),
 				_List_fromArray(
 					[
-						elm$html$Html$text(item.name)
+						A2(elm$html$Html$Attributes$style, 'margin', '0 2em 3em 2em')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$div,
+						_Utils_ap(
+							author$project$View$itemStyles(fruit.group),
+							author$project$Config$system.dropEvents(fruit.position)),
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$div,
+								author$project$View$handleStyles(fruit.group),
+								_List_Nil),
+								A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text(fruit.name)
+									]))
+							]))
 					])) : A2(
 				elm$html$Html$div,
 				_List_fromArray(
 					[
-						A2(elm$html$Html$Attributes$style, 'height', '70px'),
-						A2(elm$html$Html$Attributes$style, 'background-color', '#ccc')
+						A2(elm$html$Html$Attributes$style, 'margin', '0 2em 3em 2em')
 					]),
 				_List_fromArray(
 					[
-						elm$html$Html$text('')
+						A2(
+						elm$html$Html$div,
+						_Utils_ap(
+							author$project$View$itemStyles(fruit.group),
+							author$project$View$overedItemStyles),
+						_List_Nil)
 					]));
 		}
 	});
@@ -6385,10 +6532,7 @@ var author$project$View$groupView = F2(
 	function (maybeDraggedIndex, group) {
 		return A2(
 			elm$html$Html$div,
-			_List_fromArray(
-				[
-					A2(elm$html$Html$Attributes$style, 'margin-top', '140px')
-				]),
+			author$project$View$containerStyles,
 			A2(
 				elm$core$List$map,
 				author$project$View$itemView(maybeDraggedIndex),

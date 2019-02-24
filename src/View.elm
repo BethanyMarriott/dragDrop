@@ -38,40 +38,120 @@ groupView : Maybe Int -> List Fruit -> Html.Html Msg
 groupView maybeDraggedIndex group =
     group
         |> List.map (itemView maybeDraggedIndex)
-        |> Html.div [style "margin-top" "140px"]
+        |> Html.div containerStyles
 
 
 itemView : Maybe Int -> Fruit -> Html.Html Msg
-itemView maybeDraggedIndex item =
+itemView maybeDraggedIndex fruit =
     case maybeDraggedIndex of
         Nothing ->
-            Html.p
-                ([Html.Attributes.id item.id, style "height" "70px"] ++ Config.system.dragEvents item.position item.id)
-                [ Html.text item.name ]
+            Html.div
+                [ Html.Attributes.style "margin" "0 2em 3em 2em" ]
+                [ Html.div
+                    (Html.Attributes.id fruit.id :: itemStyles fruit.group)
+                    [ Html.div (handleStyles fruit.group ++ Config.system.dragEvents fruit.position fruit.id) []
+                    , Html.div [] [ Html.text fruit.name ]
+                    ]
+                ]
+
 
         Just draggedIndex ->
-            if draggedIndex /= item.position then
+            if draggedIndex /= fruit.position then
                 Html.div
-                    (style "height" "70px" :: Config.system.dropEvents item.position)
-                    [ Html.text item.name ]
+                    [ Html.Attributes.style "margin" "0 2em 3em 2em" ]
+                    [ Html.div
+                        (itemStyles fruit.group ++ Config.system.dropEvents fruit.position)
+                        [ Html.div (handleStyles fruit.group) []
+                        , Html.div [] [ Html.text fruit.name ]
+                        ]
+                    ]
 
             else
-                Html.div [style "height" "70px", style "background-color" "#ccc"] [ Html.text "" ]
+                Html.div
+                    [ Html.Attributes.style "margin" "0 2em 3em 2em" ]
+                    [ Html.div (itemStyles fruit.group ++ overedItemStyles) [] ]
 
 
 draggedItemView : DnDList.Draggable -> List Fruit -> Html.Html Msg
-draggedItemView draggable items =
+draggedItemView draggable fruits =
     let
-        maybeDraggedItem : Maybe Fruit
-        maybeDraggedItem =
+        maybeDraggedFruit : Maybe Fruit
+        maybeDraggedFruit =
             Config.system.draggedIndex draggable
-                |> Maybe.andThen (\index -> items |> List.drop index |> List.head)
+                |> Maybe.andThen (\index -> fruits |> List.drop index |> List.head)
     in
-    case maybeDraggedItem of
-        Just item ->
+    case maybeDraggedFruit of
+        Just fruit ->
             Html.div
-                ([style "height" "70px", style "color" "#2b2b2b"] ++ Config.system.draggedStyles draggable)
-                [ Html.text item.name ]
+                (itemStyles fruit.group ++ draggedItemStyles ++ Config.system.draggedStyles draggable)
+                [ Html.div (handleStyles fruit.group ++ draggedHandleStyles) []
+                , Html.div [] [ Html.text fruit.name ]
+                ]
 
         Nothing ->
             Html.text ""
+
+
+    -- STYLES
+
+
+containerStyles : List (Html.Attribute msg)
+containerStyles =
+    [ Html.Attributes.style "display" "flex"
+    , Html.Attributes.style "flex-wrap" "wrap"
+    , Html.Attributes.style "align-items" "center"
+    , Html.Attributes.style "justify-content" "center"
+    , Html.Attributes.style "margin-top" "50px"
+    ]
+
+
+itemStyles : Int -> List (Html.Attribute msg)
+itemStyles group =
+    [ Html.Attributes.style "width" "180px"
+    , Html.Attributes.style "height" "100px"
+    , Html.Attributes.style "background" (groupColor group)
+    , Html.Attributes.style "border-radius" "8px"
+    , Html.Attributes.style "display" "flex"
+    , Html.Attributes.style "align-items" "center"
+    ]
+
+
+draggedItemStyles : List (Html.Attribute msg)
+draggedItemStyles =
+    [ Html.Attributes.style "background" "#dc9a39" ]
+
+
+overedItemStyles : List (Html.Attribute msg)
+overedItemStyles =
+    [ Html.Attributes.style "background" "dimgray" ]
+
+
+handleStyles : Int -> List (Html.Attribute msg)
+handleStyles group =
+    [ Html.Attributes.style "width" "50px"
+    , Html.Attributes.style "height" "50px"
+    , Html.Attributes.style "background" (groupColorDark group)
+    , Html.Attributes.style "border-radius" "8px"
+    , Html.Attributes.style "margin" "20px"
+    , Html.Attributes.style "cursor" "pointer"
+    ]
+
+
+draggedHandleStyles : List (Html.Attribute msg)
+draggedHandleStyles =
+    [ Html.Attributes.style "background" "#b4752b" ]
+
+
+groupColor : Int -> String
+groupColor group =
+    case group of
+        0 -> "#cddc39"
+        1 -> "rgb(57, 205, 220)"
+        _ -> "#dc3939"
+
+groupColorDark : Int -> String
+groupColorDark group =
+    case group of
+        0 -> "#afb42b"
+        1 -> "rgb(43, 175, 180)"
+        _ -> "#b72929"
