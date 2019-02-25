@@ -1,7 +1,8 @@
 module Update exposing (update)
 
 import Array
-import Model exposing (Model, initialModel)
+import List.Extra as List
+import Model exposing (Items(..), Model, initialModel)
 import Msg exposing (Msg(..))
 import Config exposing (Fruit, system)
 
@@ -16,63 +17,85 @@ update msg model =
 
         DndMsg dndMsg ->
             let
-                ( draggable, items ) =
-                    system.update dndMsg model.draggable model.items
+                maybeDraggedIndex = system.draggedIndex model.draggable
+--
+--                ( draggable, items ) =
+--                    system.update dndMsg model.draggable model.items
+--
+--
+--                reindexedItems =
+--                    items
+--                        |> List.indexedMap (\index item -> { item | position = index })
 
-                maybeDragId = system.draggedIndex draggable
 
-                reindexedItems =
-                    items
-                        |> List.indexedMap (\index item -> { item | position = index })
 
-                (droppedAtIndex, shouldAcc) =
-                    List.foldl (getDroppedAt maybeDragId) (0, True) items
 
-                updatedItems =
-                    case shouldAcc of
-                        False ->
-                            let
-                                blah = Debug.log "droppedAt" droppedAtIndex
-
-                                maybeDraggedItem =
-                                    reindexedItems
-                                        |> List.foldl (\scu acc -> if scu.position == droppedAtIndex then scu :: acc else acc) []
-                                        |> List.head
-                                        |> Debug.log "dragged"
-
-                                maybeDroppedItem =
-                                    items
-                                        |> List.foldl (\scu acc -> if scu.position == droppedAtIndex then scu :: acc else acc) []
-                                        |> List.head
-                                        |> Debug.log "dropped"
-
-                            in
-                            case (maybeDraggedItem, maybeDroppedItem) of
-                                (Just draggedItem, Just droppedItem) ->
-                                    let
-                                        updatedItem =
-                                            { draggedItem | group = droppedItem.group }
-
-                                    in
-                                    reindexedItems
-                                        |> Array.fromList
-                                        |> Array.set droppedAtIndex updatedItem
-                                        |> Array.toList
-
-                                _ ->
-                                    reindexedItems
-                        True ->
-                            reindexedItems
+--                (droppedAtIndex, shouldAcc) =
+--                    List.foldl (getDroppedAt maybeDragId) (0, True) items
+--
+--                updatedItems =
+--                    case shouldAcc of
+--                        False ->
+--                            let
+--                                maybeDraggedItem =
+--                                    reindexedItems
+--                                        |> List.foldl (\scu acc -> if scu.position == droppedAtIndex then scu :: acc else acc) []
+--                                        |> List.head
+--
+--                                maybeDroppedItem =
+--                                    items
+--                                        |> List.foldl (\scu acc -> if scu.position == droppedAtIndex then scu :: acc else acc) []
+--                                        |> List.head
+--
+--                            in
+--                            case (maybeDraggedItem, maybeDroppedItem) of
+--                                (Just draggedItem, Just droppedItem) ->
+--                                    let
+--                                        updatedItem =
+--                                            { draggedItem | group = droppedItem.group }
+--
+--                                    in
+--                                    reindexedItems
+--                                        |> Array.fromList
+--                                        |> Array.set droppedAtIndex updatedItem
+--                                        |> Array.toList
+--
+--                                _ ->
+--                                    reindexedItems
+--                        True ->
+--                            reindexedItems
 
 
             in
-            ( { model | draggable = draggable, items = updatedItems }
-            , system.commands model.draggable
-            )
+            case maybeDraggedIndex of
+                Just draggedIndex ->
+                    let
+                        return =
+                            case model.items of
+                                NotDragging originalList ->
+                                    ( { model | items = Dragging originalList originalList }
+                                    , Cmd.none
+                                    )
+
+                                Dragging originalList updatedList ->
+                                    let
+                                        ( draggable, items ) =
+                                            system.update dndMsg model.draggable updatedList
+                                    in
+                                    ( { model | draggable = draggable, items = (Dragging originalList items) }
+                                    , system.commands model.draggable
+                                    )
+                    in
+                    return
+                Nothing ->
+                    ( model
+                    , Cmd.none
+                    )
 
 
-getDroppedAt : Maybe Int -> Fruit -> (Int, Bool) -> (Int, Bool)
-getDroppedAt maybeDragId fruit (index, shouldAcc) =
+
+getIndexOf : Maybe Int -> Fruit -> (Int, Bool) -> (Int, Bool)
+getIndexOf maybeDragId fruit (index, shouldAcc) =
     case shouldAcc of
         True ->
             if Just fruit.position == maybeDragId then

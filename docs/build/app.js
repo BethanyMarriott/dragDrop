@@ -4310,43 +4310,6 @@ function _Browser_load(url)
 		}
 	}));
 }
-
-
-
-var _Bitwise_and = F2(function(a, b)
-{
-	return a & b;
-});
-
-var _Bitwise_or = F2(function(a, b)
-{
-	return a | b;
-});
-
-var _Bitwise_xor = F2(function(a, b)
-{
-	return a ^ b;
-});
-
-function _Bitwise_complement(a)
-{
-	return ~a;
-};
-
-var _Bitwise_shiftLeftBy = F2(function(offset, a)
-{
-	return a << offset;
-});
-
-var _Bitwise_shiftRightBy = F2(function(offset, a)
-{
-	return a >> offset;
-});
-
-var _Bitwise_shiftRightZfBy = F2(function(offset, a)
-{
-	return a >>> offset;
-});
 var annaghi$dnd_list$DnDList$Draggable = function (a) {
 	return {$: 'Draggable', a: a};
 };
@@ -6139,194 +6102,57 @@ var author$project$Config$data = _List_fromArray(
 		A4(author$project$Config$Fruit, 'id-Dates', 7, 2, 'Dates'),
 		A4(author$project$Config$Fruit, 'id-Berries', 6, 2, 'Berries')
 	]);
-var author$project$Model$initialModel = {draggable: author$project$Config$system.draggable, items: author$project$Config$data};
-var author$project$Update$getDroppedAt = F3(
-	function (maybeDragId, fruit, _n0) {
-		var index = _n0.a;
-		var shouldAcc = _n0.b;
-		if (shouldAcc) {
-			return _Utils_eq(
-				elm$core$Maybe$Just(fruit.position),
-				maybeDragId) ? _Utils_Tuple2(index, false) : _Utils_Tuple2(index + 1, true);
-		} else {
-			return _Utils_Tuple2(index, shouldAcc);
-		}
-	});
-var elm$core$Array$fromListHelp = F3(
-	function (list, nodeList, nodeListSize) {
-		fromListHelp:
-		while (true) {
-			var _n0 = A2(elm$core$Elm$JsArray$initializeFromList, elm$core$Array$branchFactor, list);
-			var jsArray = _n0.a;
-			var remainingItems = _n0.b;
-			if (_Utils_cmp(
-				elm$core$Elm$JsArray$length(jsArray),
-				elm$core$Array$branchFactor) < 0) {
-				return A2(
-					elm$core$Array$builderToArray,
-					true,
-					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
-			} else {
-				var $temp$list = remainingItems,
-					$temp$nodeList = A2(
-					elm$core$List$cons,
-					elm$core$Array$Leaf(jsArray),
-					nodeList),
-					$temp$nodeListSize = nodeListSize + 1;
-				list = $temp$list;
-				nodeList = $temp$nodeList;
-				nodeListSize = $temp$nodeListSize;
-				continue fromListHelp;
-			}
-		}
-	});
-var elm$core$Array$fromList = function (list) {
-	if (!list.b) {
-		return elm$core$Array$empty;
-	} else {
-		return A3(elm$core$Array$fromListHelp, list, _List_Nil, 0);
-	}
+var author$project$Model$NotDragging = function (a) {
+	return {$: 'NotDragging', a: a};
 };
-var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
-var elm$core$Array$bitMask = 4294967295 >>> (32 - elm$core$Array$shiftStep);
-var elm$core$Bitwise$and = _Bitwise_and;
-var elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
-var elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
-var elm$core$Array$setHelp = F4(
-	function (shift, index, value, tree) {
-		var pos = elm$core$Array$bitMask & (index >>> shift);
-		var _n0 = A2(elm$core$Elm$JsArray$unsafeGet, pos, tree);
-		if (_n0.$ === 'SubTree') {
-			var subTree = _n0.a;
-			var newSub = A4(elm$core$Array$setHelp, shift - elm$core$Array$shiftStep, index, value, subTree);
-			return A3(
-				elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				elm$core$Array$SubTree(newSub),
-				tree);
-		} else {
-			var values = _n0.a;
-			var newLeaf = A3(elm$core$Elm$JsArray$unsafeSet, elm$core$Array$bitMask & index, value, values);
-			return A3(
-				elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				elm$core$Array$Leaf(newLeaf),
-				tree);
-		}
-	});
-var elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
-var elm$core$Array$tailIndex = function (len) {
-	return (len >>> 5) << 5;
+var author$project$Model$initialModel = {
+	draggable: author$project$Config$system.draggable,
+	items: author$project$Model$NotDragging(author$project$Config$data)
 };
-var elm$core$Basics$ge = _Utils_ge;
-var elm$core$Array$set = F3(
-	function (index, value, array) {
-		var len = array.a;
-		var startShift = array.b;
-		var tree = array.c;
-		var tail = array.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
-			index,
-			elm$core$Array$tailIndex(len)) > -1) ? A4(
-			elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			tree,
-			A3(elm$core$Elm$JsArray$unsafeSet, elm$core$Array$bitMask & index, value, tail)) : A4(
-			elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			A4(elm$core$Array$setHelp, startShift, index, value, tree),
-			tail));
+var author$project$Model$Dragging = F2(
+	function (a, b) {
+		return {$: 'Dragging', a: a, b: b};
 	});
-var elm$core$Debug$log = _Debug_log;
-var elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return elm$core$Maybe$Just(x);
-	} else {
-		return elm$core$Maybe$Nothing;
-	}
-};
 var author$project$Update$update = F2(
 	function (msg, model) {
 		if (msg.$ === 'NoOp') {
 			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		} else {
 			var dndMsg = msg.a;
-			var _n1 = A3(author$project$Config$system.update, dndMsg, model.draggable, model.items);
-			var draggable = _n1.a;
-			var items = _n1.b;
-			var maybeDragId = author$project$Config$system.draggedIndex(draggable);
-			var _n2 = A3(
-				elm$core$List$foldl,
-				author$project$Update$getDroppedAt(maybeDragId),
-				_Utils_Tuple2(0, true),
-				items);
-			var droppedAtIndex = _n2.a;
-			var shouldAcc = _n2.b;
-			var reindexedItems = A2(
-				elm$core$List$indexedMap,
-				F2(
-					function (index, item) {
-						return _Utils_update(
-							item,
-							{position: index});
-					}),
-				items);
-			var updatedItems = function () {
-				if (!shouldAcc) {
-					var maybeDroppedItem = A2(
-						elm$core$Debug$log,
-						'dropped',
-						elm$core$List$head(
-							A3(
-								elm$core$List$foldl,
-								F2(
-									function (scu, acc) {
-										return _Utils_eq(scu.position, droppedAtIndex) ? A2(elm$core$List$cons, scu, acc) : acc;
-									}),
-								_List_Nil,
-								items)));
-					var maybeDraggedItem = A2(
-						elm$core$Debug$log,
-						'dragged',
-						elm$core$List$head(
-							A3(
-								elm$core$List$foldl,
-								F2(
-									function (scu, acc) {
-										return _Utils_eq(scu.position, droppedAtIndex) ? A2(elm$core$List$cons, scu, acc) : acc;
-									}),
-								_List_Nil,
-								reindexedItems)));
-					var blah = A2(elm$core$Debug$log, 'droppedAt', droppedAtIndex);
-					var _n4 = _Utils_Tuple2(maybeDraggedItem, maybeDroppedItem);
-					if ((_n4.a.$ === 'Just') && (_n4.b.$ === 'Just')) {
-						var draggedItem = _n4.a.a;
-						var droppedItem = _n4.b.a;
-						var updatedItem = _Utils_update(
-							draggedItem,
-							{group: droppedItem.group});
-						return elm$core$Array$toList(
-							A3(
-								elm$core$Array$set,
-								droppedAtIndex,
-								updatedItem,
-								elm$core$Array$fromList(reindexedItems)));
+			var maybeDraggedIndex = author$project$Config$system.draggedIndex(model.draggable);
+			if (maybeDraggedIndex.$ === 'Just') {
+				var draggedIndex = maybeDraggedIndex.a;
+				var _return = function () {
+					var _n2 = model.items;
+					if (_n2.$ === 'NotDragging') {
+						var originalList = _n2.a;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									items: A2(author$project$Model$Dragging, originalList, originalList)
+								}),
+							elm$core$Platform$Cmd$none);
 					} else {
-						return reindexedItems;
+						var originalList = _n2.a;
+						var updatedList = _n2.b;
+						var _n3 = A3(author$project$Config$system.update, dndMsg, model.draggable, updatedList);
+						var draggable = _n3.a;
+						var items = _n3.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									draggable: draggable,
+									items: A2(author$project$Model$Dragging, originalList, items)
+								}),
+							author$project$Config$system.commands(model.draggable));
 					}
-				} else {
-					return reindexedItems;
-				}
-			}();
-			return _Utils_Tuple2(
-				_Utils_update(
-					model,
-					{draggable: draggable, items: updatedItems}),
-				author$project$Config$system.commands(model.draggable));
+				}();
+				return _return;
+			} else {
+				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+			}
 		}
 	});
 var author$project$View$draggedHandleStyles = _List_fromArray(
@@ -6342,7 +6168,7 @@ var author$project$View$groupColorDark = function (group) {
 		case 0:
 			return '#afb42b';
 		case 1:
-			return 'rgb(43, 175, 180)';
+			return '#2bafb4';
 		default:
 			return '#b72929';
 	}
@@ -6366,7 +6192,7 @@ var author$project$View$groupColor = function (group) {
 		case 0:
 			return '#cddc39';
 		case 1:
-			return 'rgb(57, 205, 220)';
+			return '#39cddc';
 		default:
 			return '#dc3939';
 	}
@@ -6384,6 +6210,15 @@ var author$project$View$itemStyles = function (group) {
 			A2(elm$html$Html$Attributes$style, 'display', 'flex'),
 			A2(elm$html$Html$Attributes$style, 'align-items', 'center')
 		]);
+};
+var elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(x);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
 };
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -6426,14 +6261,6 @@ var author$project$View$draggedItemView = F2(
 			return elm$html$Html$text('');
 		}
 	});
-var author$project$View$containerStyles = _List_fromArray(
-	[
-		A2(elm$html$Html$Attributes$style, 'display', 'flex'),
-		A2(elm$html$Html$Attributes$style, 'flex-wrap', 'wrap'),
-		A2(elm$html$Html$Attributes$style, 'align-items', 'center'),
-		A2(elm$html$Html$Attributes$style, 'justify-content', 'center'),
-		A2(elm$html$Html$Attributes$style, 'margin-top', '50px')
-	]);
 var author$project$View$overedItemStyles = _List_fromArray(
 	[
 		A2(elm$html$Html$Attributes$style, 'background', 'dimgray')
@@ -6528,81 +6355,19 @@ var author$project$View$itemView = F2(
 					]));
 		}
 	});
-var author$project$View$groupView = F2(
-	function (maybeDraggedIndex, group) {
-		return A2(
-			elm$html$Html$div,
-			author$project$View$containerStyles,
-			A2(
-				elm$core$List$map,
-				author$project$View$itemView(maybeDraggedIndex),
-				group));
-	});
 var elm$html$Html$section = _VirtualDom_node('section');
-var elm_community$list_extra$List$Extra$oneGroupWhileHelper = F3(
-	function (condition, first, list) {
-		if (!list.b) {
-			return _Utils_Tuple2(_List_Nil, _List_Nil);
-		} else {
-			var second = list.a;
-			var rest = list.b;
-			if (A2(condition, first, second)) {
-				var _n1 = A3(elm_community$list_extra$List$Extra$oneGroupWhileHelper, condition, second, rest);
-				var thisGroup = _n1.a;
-				var ungroupedRest = _n1.b;
-				return _Utils_Tuple2(
-					A2(elm$core$List$cons, second, thisGroup),
-					ungroupedRest);
-			} else {
-				return _Utils_Tuple2(_List_Nil, list);
-			}
-		}
-	});
-var elm_community$list_extra$List$Extra$accumulateGroupWhile = F3(
-	function (condition, list, accum) {
-		accumulateGroupWhile:
-		while (true) {
-			if (!list.b) {
-				return elm$core$List$reverse(accum);
-			} else {
-				var first = list.a;
-				var rest = list.b;
-				var _n1 = A3(elm_community$list_extra$List$Extra$oneGroupWhileHelper, condition, first, rest);
-				var thisGroup = _n1.a;
-				var ungroupedRest = _n1.b;
-				var $temp$condition = condition,
-					$temp$list = ungroupedRest,
-					$temp$accum = A2(
-					elm$core$List$cons,
-					_Utils_Tuple2(first, thisGroup),
-					accum);
-				condition = $temp$condition;
-				list = $temp$list;
-				accum = $temp$accum;
-				continue accumulateGroupWhile;
-			}
-		}
-	});
-var elm_community$list_extra$List$Extra$groupWhile = F2(
-	function (condition, list) {
-		return A3(elm_community$list_extra$List$Extra$accumulateGroupWhile, condition, list, _List_Nil);
-	});
 var author$project$View$view = function (model) {
 	var maybeDraggedIndex = author$project$Config$system.draggedIndex(model.draggable);
-	var groupedItems = A2(
-		elm$core$List$map,
-		function (_n0) {
-			var item = _n0.a;
-			var list = _n0.b;
-			return A2(elm$core$List$cons, item, list);
-		},
-		A2(
-			elm_community$list_extra$List$Extra$groupWhile,
-			F2(
-				function (first, second) {
-					return _Utils_eq(first.group, second.group);
-				}),
-			model.items));
+	var groupedItems = function () {
+		var _n0 = model.items;
+		if (_n0.$ === 'Dragging') {
+			var updatedList = _n0.b;
+			return updatedList;
+		} else {
+			var list = _n0.a;
+			return list;
+		}
+	}();
 	return A2(
 		elm$html$Html$section,
 		_List_fromArray(
@@ -6617,9 +6382,9 @@ var author$project$View$view = function (model) {
 				_List_Nil,
 				A2(
 					elm$core$List$map,
-					author$project$View$groupView(maybeDraggedIndex),
+					author$project$View$itemView(maybeDraggedIndex),
 					groupedItems)),
-				A2(author$project$View$draggedItemView, model.draggable, model.items)
+				A2(author$project$View$draggedItemView, model.draggable, groupedItems)
 			]));
 };
 var elm$browser$Browser$element = _Browser_element;

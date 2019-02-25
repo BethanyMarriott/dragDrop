@@ -1,4 +1,4 @@
-module Model exposing (Model, initialModel)
+module Model exposing (Model, initialModel, Items(..))
 
 
 -- MODEL
@@ -11,12 +11,15 @@ import DnDList
 
 type alias Model =
     { draggable : DnDList.Draggable
-    , items : List Fruit
+    , items : Items
     }
 
+type Items
+    = Dragging (List Fruit) (List Fruit)
+    | NotDragging (List Fruit)
 
 initialModel : Model
 initialModel =
     { draggable = Config.system.draggable
-    , items = Config.data
+    , items = NotDragging Config.data
     }

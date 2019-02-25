@@ -4,7 +4,7 @@ import DnDList
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Model exposing (Model)
+import Model exposing (Model, Items(..))
 import Msg exposing (Msg(..))
 import List.Extra as List
 import Styles
@@ -19,18 +19,20 @@ view model =
             Config.system.draggedIndex model.draggable
 
         groupedItems =
-            model.items
-                |> List.groupWhile (\first second -> first.group == second.group)
-                |> List.map (\(item, list) -> item::list)
+            case model.items of
+                Dragging _ updatedList ->
+                    updatedList
+                NotDragging list ->
+                    list
     in
     Html.section
         [ Html.Attributes.style "padding" "3em 0"
         , Html.Attributes.style "text-align" "center"
         ]
         [ groupedItems
-            |> List.map (groupView maybeDraggedIndex)
+            |> List.map (itemView maybeDraggedIndex)
             |> Html.div []
-        , draggedItemView model.draggable model.items
+        , draggedItemView model.draggable groupedItems
         ]
 
 
@@ -146,12 +148,12 @@ groupColor : Int -> String
 groupColor group =
     case group of
         0 -> "#cddc39"
-        1 -> "rgb(57, 205, 220)"
+        1 -> "#39cddc"
         _ -> "#dc3939"
 
 groupColorDark : Int -> String
 groupColorDark group =
     case group of
         0 -> "#afb42b"
-        1 -> "rgb(43, 175, 180)"
+        1 -> "#2bafb4"
         _ -> "#b72929"
