@@ -15,7 +15,7 @@ type alias Model =
     }
 
 type Items
-    = Dragging (List Fruit) (List Fruit)
+    = Dragging String (List Fruit) (List Fruit)
     | NotDragging (List Fruit)
 
 initialModel : Model

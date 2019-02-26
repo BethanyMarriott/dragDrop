@@ -73,15 +73,27 @@ update msg model =
                         ( draggable, items ) =
                             system.update dndMsg model.draggable originalList
 
+                        dragId =
+                            case system.draggedIndex draggable of
+                                Just draggedIndex ->
+                                    case List.getAt draggedIndex items of
+                                        Just item ->
+                                            item.id
+                                        Nothing ->
+                                            "id"
+                                Nothing ->
+                                    "id"
                     in
-                    ( { model | draggable = draggable, items = Dragging originalList items }
+                    ( { model | draggable = draggable, items = Dragging dragId originalList items }
                     , system.commands model.draggable
                     )
 
-                Dragging originalList updatedList ->
+                Dragging dragId originalList updatedList ->
                     let
                         ( draggable, items ) =
                             system.update dndMsg model.draggable updatedList
+
+                        id = Debug.log "id" dragId
 
                         repositionedList =
                             List.indexedMap (\index scu -> { scu | position = index }) items
@@ -91,23 +103,23 @@ update msg model =
                                 Just draggedIndex ->
                                     let
                                         dragged = Debug.log "dragged" draggedIndex
-                                        maybeDraggedItem = List.getAt draggedIndex repositionedList |> Debug.log "hi"
+                                        maybeDraggedItem = List.getAt draggedIndex items |> Debug.log "hi"
                                         maybeDroppedAt = List.getAt draggedIndex originalList
                                     in
                                     case (maybeDraggedItem, maybeDroppedAt) of
                                         (Just draggedItem, Just droppedAt) ->
                                             let
                                                 regroupedList =
-                                                    if draggedItem.position == draggedIndex then
+                                                    if draggedItem.id == dragId then
                                                     Array.fromList repositionedList
                                                         |> Array.set draggedIndex { draggedItem | group = droppedAt.group }
                                                         |> Array.toList
                                                     else
                                                     repositionedList
                                             in
-                                            Dragging originalList regroupedList
+                                            Dragging dragId originalList regroupedList
                                         _ ->
-                                            Dragging originalList repositionedList
+                                            Dragging dragId originalList repositionedList
 
                                 Nothing ->
                                     NotDragging repositionedList

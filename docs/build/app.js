@@ -6146,9 +6146,9 @@ var author$project$Model$initialModel = {
 	draggable: author$project$Config$system.draggable,
 	items: author$project$Model$NotDragging(author$project$Config$data)
 };
-var author$project$Model$Dragging = F2(
-	function (a, b) {
-		return {$: 'Dragging', a: a, b: b};
+var author$project$Model$Dragging = F3(
+	function (a, b, c) {
+		return {$: 'Dragging', a: a, b: b, c: c};
 	});
 var elm$core$Array$fromListHelp = F3(
 	function (list, nodeList, nodeListSize) {
@@ -6265,20 +6265,37 @@ var author$project$Update$update = F2(
 				var _n2 = A3(author$project$Config$system.update, dndMsg, model.draggable, originalList);
 				var draggable = _n2.a;
 				var items = _n2.b;
+				var dragId = function () {
+					var _n3 = author$project$Config$system.draggedIndex(draggable);
+					if (_n3.$ === 'Just') {
+						var draggedIndex = _n3.a;
+						var _n4 = A2(elm_community$list_extra$List$Extra$getAt, draggedIndex, items);
+						if (_n4.$ === 'Just') {
+							var item = _n4.a;
+							return item.id;
+						} else {
+							return 'id';
+						}
+					} else {
+						return 'id';
+					}
+				}();
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
 							draggable: draggable,
-							items: A2(author$project$Model$Dragging, originalList, items)
+							items: A3(author$project$Model$Dragging, dragId, originalList, items)
 						}),
 					author$project$Config$system.commands(model.draggable));
 			} else {
-				var originalList = _n1.a;
-				var updatedList = _n1.b;
-				var _n3 = A3(author$project$Config$system.update, dndMsg, model.draggable, updatedList);
-				var draggable = _n3.a;
-				var items = _n3.b;
+				var dragId = _n1.a;
+				var originalList = _n1.b;
+				var updatedList = _n1.c;
+				var id = A2(elm$core$Debug$log, 'id', dragId);
+				var _n5 = A3(author$project$Config$system.update, dndMsg, model.draggable, updatedList);
+				var draggable = _n5.a;
+				var items = _n5.b;
 				var repositionedList = A2(
 					elm$core$List$indexedMap,
 					F2(
@@ -6289,20 +6306,20 @@ var author$project$Update$update = F2(
 						}),
 					items);
 				var newItems = function () {
-					var _n4 = author$project$Config$system.draggedIndex(model.draggable);
-					if (_n4.$ === 'Just') {
-						var draggedIndex = _n4.a;
+					var _n6 = author$project$Config$system.draggedIndex(model.draggable);
+					if (_n6.$ === 'Just') {
+						var draggedIndex = _n6.a;
 						var maybeDroppedAt = A2(elm_community$list_extra$List$Extra$getAt, draggedIndex, originalList);
 						var maybeDraggedItem = A2(
 							elm$core$Debug$log,
 							'hi',
-							A2(elm_community$list_extra$List$Extra$getAt, draggedIndex, repositionedList));
+							A2(elm_community$list_extra$List$Extra$getAt, draggedIndex, items));
 						var dragged = A2(elm$core$Debug$log, 'dragged', draggedIndex);
-						var _n5 = _Utils_Tuple2(maybeDraggedItem, maybeDroppedAt);
-						if ((_n5.a.$ === 'Just') && (_n5.b.$ === 'Just')) {
-							var draggedItem = _n5.a.a;
-							var droppedAt = _n5.b.a;
-							var regroupedList = _Utils_eq(draggedItem.position, draggedIndex) ? elm$core$Array$toList(
+						var _n7 = _Utils_Tuple2(maybeDraggedItem, maybeDroppedAt);
+						if ((_n7.a.$ === 'Just') && (_n7.b.$ === 'Just')) {
+							var draggedItem = _n7.a.a;
+							var droppedAt = _n7.b.a;
+							var regroupedList = _Utils_eq(draggedItem.id, dragId) ? elm$core$Array$toList(
 								A3(
 									elm$core$Array$set,
 									draggedIndex,
@@ -6310,9 +6327,9 @@ var author$project$Update$update = F2(
 										draggedItem,
 										{group: droppedAt.group}),
 									elm$core$Array$fromList(repositionedList))) : repositionedList;
-							return A2(author$project$Model$Dragging, originalList, regroupedList);
+							return A3(author$project$Model$Dragging, dragId, originalList, regroupedList);
 						} else {
-							return A2(author$project$Model$Dragging, originalList, repositionedList);
+							return A3(author$project$Model$Dragging, dragId, originalList, repositionedList);
 						}
 					} else {
 						return author$project$Model$NotDragging(repositionedList);
@@ -6523,7 +6540,7 @@ var author$project$View$view = function (model) {
 	var groupedItems = function () {
 		var _n0 = model.items;
 		if (_n0.$ === 'Dragging') {
-			var updatedList = _n0.b;
+			var updatedList = _n0.c;
 			return updatedList;
 		} else {
 			var list = _n0.a;

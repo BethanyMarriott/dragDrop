@@ -20,7 +20,7 @@ view model =
 
         groupedItems =
             case model.items of
-                Dragging _ updatedList ->
+                Dragging _ _ updatedList ->
                     updatedList
                 NotDragging list ->
                     list
