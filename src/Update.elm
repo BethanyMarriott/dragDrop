@@ -67,38 +67,62 @@ update msg model =
 
 
             in
-            case maybeDraggedIndex of
-                Just draggedIndex ->
+             case model.items of
+                NotDragging originalList ->
                     let
-                        return =
-                            case model.items of
-                                NotDragging originalList ->
-                                    ( { model | items = Dragging originalList originalList }
-                                    , Cmd.none
-                                    )
+                        ( draggable, items ) =
+                            system.update dndMsg model.draggable originalList
 
-                                Dragging originalList updatedList ->
-                                    let
-                                        ( draggable, items ) =
-                                            system.update dndMsg model.draggable updatedList
-                                    in
-                                    ( { model | draggable = draggable, items = (Dragging originalList items) }
-                                    , system.commands model.draggable
-                                    )
                     in
-                    return
-                Nothing ->
-                    ( model
-                    , Cmd.none
+                    ( { model | draggable = draggable, items = Dragging originalList items }
+                    , system.commands model.draggable
+                    )
+
+                Dragging originalList updatedList ->
+                    let
+                        ( draggable, items ) =
+                            system.update dndMsg model.draggable updatedList
+
+                        repositionedList =
+                            List.indexedMap (\index scu -> { scu | position = index }) items
+
+                        newItems =
+                            case system.draggedIndex model.draggable of
+                                Just draggedIndex ->
+                                    let
+                                        dragged = Debug.log "dragged" draggedIndex
+                                        maybeDraggedItem = List.getAt draggedIndex repositionedList |> Debug.log "hi"
+                                        maybeDroppedAt = List.getAt draggedIndex originalList
+                                    in
+                                    case (maybeDraggedItem, maybeDroppedAt) of
+                                        (Just draggedItem, Just droppedAt) ->
+                                            let
+                                                regroupedList =
+                                                    if draggedItem.position == draggedIndex then
+                                                    Array.fromList repositionedList
+                                                        |> Array.set draggedIndex { draggedItem | group = droppedAt.group }
+                                                        |> Array.toList
+                                                    else
+                                                    repositionedList
+                                            in
+                                            Dragging originalList regroupedList
+                                        _ ->
+                                            Dragging originalList repositionedList
+
+                                Nothing ->
+                                    NotDragging repositionedList
+                    in
+                    ( { model | draggable = draggable, items = newItems}
+                    , system.commands model.draggable
                     )
 
 
 
-getIndexOf : Maybe Int -> Fruit -> (Int, Bool) -> (Int, Bool)
-getIndexOf maybeDragId fruit (index, shouldAcc) =
+getIndexOf : Maybe Fruit -> Fruit -> (Int, Bool) -> (Int, Bool)
+getIndexOf maybeFruit fruit (index, shouldAcc) =
     case shouldAcc of
         True ->
-            if Just fruit.position == maybeDragId then
+            if True then
                 (index, False)
             else
                 (index + 1, True)

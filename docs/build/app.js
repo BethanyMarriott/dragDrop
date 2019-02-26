@@ -4310,6 +4310,43 @@ function _Browser_load(url)
 		}
 	}));
 }
+
+
+
+var _Bitwise_and = F2(function(a, b)
+{
+	return a & b;
+});
+
+var _Bitwise_or = F2(function(a, b)
+{
+	return a | b;
+});
+
+var _Bitwise_xor = F2(function(a, b)
+{
+	return a ^ b;
+});
+
+function _Bitwise_complement(a)
+{
+	return ~a;
+};
+
+var _Bitwise_shiftLeftBy = F2(function(offset, a)
+{
+	return a << offset;
+});
+
+var _Bitwise_shiftRightBy = F2(function(offset, a)
+{
+	return a >> offset;
+});
+
+var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+{
+	return a >>> offset;
+});
 var annaghi$dnd_list$DnDList$Draggable = function (a) {
 	return {$: 'Draggable', a: a};
 };
@@ -6113,6 +6150,108 @@ var author$project$Model$Dragging = F2(
 	function (a, b) {
 		return {$: 'Dragging', a: a, b: b};
 	});
+var elm$core$Array$fromListHelp = F3(
+	function (list, nodeList, nodeListSize) {
+		fromListHelp:
+		while (true) {
+			var _n0 = A2(elm$core$Elm$JsArray$initializeFromList, elm$core$Array$branchFactor, list);
+			var jsArray = _n0.a;
+			var remainingItems = _n0.b;
+			if (_Utils_cmp(
+				elm$core$Elm$JsArray$length(jsArray),
+				elm$core$Array$branchFactor) < 0) {
+				return A2(
+					elm$core$Array$builderToArray,
+					true,
+					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
+			} else {
+				var $temp$list = remainingItems,
+					$temp$nodeList = A2(
+					elm$core$List$cons,
+					elm$core$Array$Leaf(jsArray),
+					nodeList),
+					$temp$nodeListSize = nodeListSize + 1;
+				list = $temp$list;
+				nodeList = $temp$nodeList;
+				nodeListSize = $temp$nodeListSize;
+				continue fromListHelp;
+			}
+		}
+	});
+var elm$core$Array$fromList = function (list) {
+	if (!list.b) {
+		return elm$core$Array$empty;
+	} else {
+		return A3(elm$core$Array$fromListHelp, list, _List_Nil, 0);
+	}
+};
+var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var elm$core$Array$bitMask = 4294967295 >>> (32 - elm$core$Array$shiftStep);
+var elm$core$Bitwise$and = _Bitwise_and;
+var elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
+var elm$core$Array$setHelp = F4(
+	function (shift, index, value, tree) {
+		var pos = elm$core$Array$bitMask & (index >>> shift);
+		var _n0 = A2(elm$core$Elm$JsArray$unsafeGet, pos, tree);
+		if (_n0.$ === 'SubTree') {
+			var subTree = _n0.a;
+			var newSub = A4(elm$core$Array$setHelp, shift - elm$core$Array$shiftStep, index, value, subTree);
+			return A3(
+				elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				elm$core$Array$SubTree(newSub),
+				tree);
+		} else {
+			var values = _n0.a;
+			var newLeaf = A3(elm$core$Elm$JsArray$unsafeSet, elm$core$Array$bitMask & index, value, values);
+			return A3(
+				elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				elm$core$Array$Leaf(newLeaf),
+				tree);
+		}
+	});
+var elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
+var elm$core$Basics$ge = _Utils_ge;
+var elm$core$Array$set = F3(
+	function (index, value, array) {
+		var len = array.a;
+		var startShift = array.b;
+		var tree = array.c;
+		var tail = array.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
+			index,
+			elm$core$Array$tailIndex(len)) > -1) ? A4(
+			elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			tree,
+			A3(elm$core$Elm$JsArray$unsafeSet, elm$core$Array$bitMask & index, value, tail)) : A4(
+			elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A4(elm$core$Array$setHelp, startShift, index, value, tree),
+			tail));
+	});
+var elm$core$Debug$log = _Debug_log;
+var elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(x);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
+var elm_community$list_extra$List$Extra$getAt = F2(
+	function (idx, xs) {
+		return (idx < 0) ? elm$core$Maybe$Nothing : elm$core$List$head(
+			A2(elm$core$List$drop, idx, xs));
+	});
 var author$project$Update$update = F2(
 	function (msg, model) {
 		if (msg.$ === 'NoOp') {
@@ -6120,38 +6259,70 @@ var author$project$Update$update = F2(
 		} else {
 			var dndMsg = msg.a;
 			var maybeDraggedIndex = author$project$Config$system.draggedIndex(model.draggable);
-			if (maybeDraggedIndex.$ === 'Just') {
-				var draggedIndex = maybeDraggedIndex.a;
-				var _return = function () {
-					var _n2 = model.items;
-					if (_n2.$ === 'NotDragging') {
-						var originalList = _n2.a;
-						return _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{
-									items: A2(author$project$Model$Dragging, originalList, originalList)
-								}),
-							elm$core$Platform$Cmd$none);
+			var _n1 = model.items;
+			if (_n1.$ === 'NotDragging') {
+				var originalList = _n1.a;
+				var _n2 = A3(author$project$Config$system.update, dndMsg, model.draggable, originalList);
+				var draggable = _n2.a;
+				var items = _n2.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							draggable: draggable,
+							items: A2(author$project$Model$Dragging, originalList, items)
+						}),
+					author$project$Config$system.commands(model.draggable));
+			} else {
+				var originalList = _n1.a;
+				var updatedList = _n1.b;
+				var _n3 = A3(author$project$Config$system.update, dndMsg, model.draggable, updatedList);
+				var draggable = _n3.a;
+				var items = _n3.b;
+				var repositionedList = A2(
+					elm$core$List$indexedMap,
+					F2(
+						function (index, scu) {
+							return _Utils_update(
+								scu,
+								{position: index});
+						}),
+					items);
+				var newItems = function () {
+					var _n4 = author$project$Config$system.draggedIndex(model.draggable);
+					if (_n4.$ === 'Just') {
+						var draggedIndex = _n4.a;
+						var maybeDroppedAt = A2(elm_community$list_extra$List$Extra$getAt, draggedIndex, originalList);
+						var maybeDraggedItem = A2(
+							elm$core$Debug$log,
+							'hi',
+							A2(elm_community$list_extra$List$Extra$getAt, draggedIndex, repositionedList));
+						var dragged = A2(elm$core$Debug$log, 'dragged', draggedIndex);
+						var _n5 = _Utils_Tuple2(maybeDraggedItem, maybeDroppedAt);
+						if ((_n5.a.$ === 'Just') && (_n5.b.$ === 'Just')) {
+							var draggedItem = _n5.a.a;
+							var droppedAt = _n5.b.a;
+							var regroupedList = _Utils_eq(draggedItem.position, draggedIndex) ? elm$core$Array$toList(
+								A3(
+									elm$core$Array$set,
+									draggedIndex,
+									_Utils_update(
+										draggedItem,
+										{group: droppedAt.group}),
+									elm$core$Array$fromList(repositionedList))) : repositionedList;
+							return A2(author$project$Model$Dragging, originalList, regroupedList);
+						} else {
+							return A2(author$project$Model$Dragging, originalList, repositionedList);
+						}
 					} else {
-						var originalList = _n2.a;
-						var updatedList = _n2.b;
-						var _n3 = A3(author$project$Config$system.update, dndMsg, model.draggable, updatedList);
-						var draggable = _n3.a;
-						var items = _n3.b;
-						return _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{
-									draggable: draggable,
-									items: A2(author$project$Model$Dragging, originalList, items)
-								}),
-							author$project$Config$system.commands(model.draggable));
+						return author$project$Model$NotDragging(repositionedList);
 					}
 				}();
-				return _return;
-			} else {
-				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{draggable: draggable, items: newItems}),
+					author$project$Config$system.commands(model.draggable));
 			}
 		}
 	});
@@ -6210,15 +6381,6 @@ var author$project$View$itemStyles = function (group) {
 			A2(elm$html$Html$Attributes$style, 'display', 'flex'),
 			A2(elm$html$Html$Attributes$style, 'align-items', 'center')
 		]);
-};
-var elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return elm$core$Maybe$Just(x);
-	} else {
-		return elm$core$Maybe$Nothing;
-	}
 };
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
